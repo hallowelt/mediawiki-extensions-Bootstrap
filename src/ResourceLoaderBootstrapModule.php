@@ -2,7 +2,7 @@
 
 namespace Bootstrap;
 
-use Less_Parser;
+use Leafo\ScssPhp\Compiler;
 use ResourceLoaderContext;
 use ResourceLoaderFileModule;
 use BagOStuff;
@@ -12,7 +12,7 @@ use Exception;
 /**
  * File holding the ResourceLoaderBootstrapModule class
  *
- * @copyright (C) 2013, Stephan Gambke
+ * @copyright (C) 2013-2017, Stephan Gambke
  * @license       http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3 (or later)
  *
  * This file is part of the MediaWiki extension Bootstrap.
@@ -34,17 +34,20 @@ use Exception;
  */
 
 /**
- * ResourceLoader module based on local JavaScript/LESS files.
+ * ResourceLoader module based on local JavaScript/SCSS files.
  *
- * Different to the behaviour of ResourceLoaderFileModule this module compiles all LESS files in one compile context.
+ * Different to the behaviour of ResourceLoaderFileModule this module compiles
+ * all SCSS files in one compile context.
  *
  * It recognizes the following additional fields in $wgResourceModules:
- * * styles: array of LESS file names (with or without extension .less)
- * * variables: array of key value pairs representing LESS variables, that will be added to the LESS script after all
- *              files imports, i.e. that may override any variable set in style files
- * * paths: array of paths to search for style files; all these paths together represent one virtual file base and will
- *            be searched for a style file; this means it is not possible to include two LESS files with the same name
- *          even if in different paths
+ * * styles: array of SCSS file names (with or without extension .scss)
+ * * variables: array of key value pairs representing SCSS variables, that will
+ *              be added to the SCSS script after all files imports, i.e. that
+ *              may override any variable set in style files
+ * * paths: array of paths to search for style files; all these paths together
+ *              represent one virtual file base and will be searched for a style
+ *              file; this means it is not possible to include two SCSS files
+ *              with the same name even if in different paths
  *
  * @package Bootstrap
  */
@@ -79,7 +82,7 @@ class ResourceLoaderBootstrapModule extends ResourceLoaderFileModule {
 
 		if ( $this->styleText === null ) {
 
-			$this->retrieveStylesFromCache( $context );
+//			$this->retrieveStylesFromCache( $context );
 
 			if ( $this->styleText === null ) {
 				$this->compileStyles( $context );
@@ -153,22 +156,42 @@ class ResourceLoaderBootstrapModule extends ResourceLoaderFileModule {
 
 	protected function compileStyles( ResourceLoaderContext $context ) {
 
-		$lessParser = new Less_Parser();
 		$remotePath = $this->getRemotePath( '' );
 
 		try {
 
-			foreach ( $this->styles as $style ) {
-				$lessParser->parseFile( $this->getLocalPath( $style ), $remotePath );
+			$scss = new Compiler();
+			$scss->setImportPaths( $this->getLocalPath('') );
+			$scss->addImportPath( function ( $path ) {
+				if ( !file_exists( $path ) ) {
+					// TODO: Throw error
+					return null;
+				}
+				return $path;
+			} );
+
+			$imports = '';
+
+
+			foreach ( $this->styles as $stylefile ) {
+				$imports .= "@import \"" . basename( $stylefile ) . "\";\n";
 			}
 
 			foreach ( $this->extStyles as $stylefile => $remotePath ) {
-				$lessParser->parseFile( $stylefile, $remotePath );
+//				$lessParser->parseFile( $stylefile, $remotePath );
+//				$scss->addImportPath( dirname($stylefile) );
+				if ( is_readable( $stylefile ) ) {
+					$imports .= "@import \"" . $stylefile . "\";\n";
+				} else {
+					throw new \MWException( "External style file $stylefile is not readable." );
+				}
+
+
 			}
 
-			$lessParser->ModifyVars( $this->variables );
+			$scss->setVariables( $this->variables );
 
-			$this->styleText = $lessParser->getCss();
+			$this->styleText = $scss->compile( $imports );
 
 			$this->updateCache( $context );
 
@@ -176,7 +199,7 @@ class ResourceLoaderBootstrapModule extends ResourceLoaderFileModule {
 
 			$this->purgeCache( $context );
 			wfDebug( $e->getMessage() );
-			$this->styleText = '/* LESS compile error: ' . $e->getMessage() . '*/';
+			$this->styleText = '/* SCSS compile error: ' . $e->getMessage() . '*/';
 		}
 
 	}

@@ -1,5 +1,15 @@
 ## Release Notes
 
+### Bootstrap 2.0
+
+Released on TBD
+
+Changes:
+* Use Bootstrap 4
+* Use [SCSS compiler by Leaf Corcoran](https://github.com/leafo/scssphp)
+* Depends on MW 1.23+, PHP 5.6+
+* Enable tarball releases
+
 ### Bootstrap 1.1.5
 
 Released on 27-Jan-2016

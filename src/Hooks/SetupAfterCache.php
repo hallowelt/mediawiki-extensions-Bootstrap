@@ -8,7 +8,7 @@ use InvalidArgumentException;
 /**
  * File holding the Hooks class
  *
- * @copyright (C) 2013, Stephan Gambke
+ * @copyright (C) 2013-2017, Stephan Gambke
  * @license       http://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3 (or later)
  *
  * This file is part of the MediaWiki extension Bootstrap.
@@ -62,8 +62,6 @@ class SetupAfterCache {
 
 		$this->assertAcceptableConfiguration();
 
-		$this->removeLegacyLessCompilerFromComposerAutoloader();
-
 		$this->registerBootstrapResourcePaths(
 			$this->isReadablePath( $this->configuration['localBasePath'] ),
 			$this->configuration[ 'remoteBasePath' ]
@@ -82,8 +80,8 @@ class SetupAfterCache {
 	protected function registerBootstrapResourcePaths( $localBasePath, $remoteBasePath ) {
 
 		$GLOBALS[ 'wgResourceModules' ][ 'ext.bootstrap.styles' ] = array_replace_recursive( array(
-				'localBasePath'  => $localBasePath . '/less',
-				'remoteBasePath' => $remoteBasePath . '/less',
+				'localBasePath'  => $localBasePath . '/scss',
+				'remoteBasePath' => $remoteBasePath . '/scss',
 				'variables'      => array(
 					'icon-font-path' => "\"$remoteBasePath/fonts/\"",
 				),
@@ -92,50 +90,11 @@ class SetupAfterCache {
 		);
 
 		$GLOBALS[ 'wgResourceModules' ][ 'ext.bootstrap.scripts' ] = array_replace_recursive( array(
-				'localBasePath'  => $localBasePath . '/js',
-				'remoteBasePath' => $remoteBasePath . '/js',
+				'localBasePath'  => $localBasePath . '/js/dist',
+				'remoteBasePath' => $remoteBasePath . '/js/dist',
 			),
 			$GLOBALS[ 'wgResourceModules' ][ 'ext.bootstrap.scripts' ]
 		);
-	}
-
-	/**
-	 * Remove lessc adapter of the less.php compiler from Composer autoloader
-	 *
-	 * MediaWiki core uses the lessc compiler from http://leafo.net/lessphp .
-	 * This compiler requires non-standard Less files which are incompatible
-	 * with the compiler used by the Bootstrap extension. It is therefore
-	 * necessary to ensure that MW will load its own lessc compiler class
-	 * and not the adapter class provided by the Less compiler used by the
-	 * Bootstrap extension or else it will not be able to compile its broken
-	 * Less files.
-	 */
-	protected function removeLegacyLessCompilerFromComposerAutoloader() {
-
-		$autoloadFunctions = spl_autoload_functions();
-
-		foreach ( $autoloadFunctions as $autoloadFunction ) {
-
-			if ( is_object( $autoloadFunction ) && ( $autoloadFunction instanceof Closure ) ) {
-				continue;
-			}
-
-			$classLoader = $autoloadFunction[ 0 ];
-
-			if ( is_a( $classLoader, '\Composer\Autoload\ClassLoader' ) ) {
-
-				$classMap = $classLoader->getClassMap();
-
-				if ( !is_array( $classMap ) ||
-					!array_key_exists( 'lessc', $classMap ) ||
-					strpos( $classMap[ 'lessc' ], '/less.php/less.php/lessc.inc.php') !== false ) {
-
-					$classLoader->addClassMap( array( 'lessc' => null ) );
-				}
-				break;
-			}
-		}
-
 	}
 
 	/**

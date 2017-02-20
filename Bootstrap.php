@@ -14,7 +14,7 @@
 /**
  * The main file of the Bootstrap extension
  *
- * @copyright (C) 2013 - 2016, Stephan Gambke
+ * @copyright (C) 2013 - 2017, Stephan Gambke
  * @license       https://www.gnu.org/licenses/gpl-3.0.html GNU General Public License, version 3 (or later)
  *
  * This file is part of the MediaWiki extension Bootstrap.
@@ -49,7 +49,7 @@ call_user_func( function () {
 	/**
 	 * The extension version
 	 */
-	define( 'BS_VERSION', '1.2-alpha' );
+	define( 'BS_VERSION', '2.0-alpha' );
 
 	// register the extension
 	$GLOBALS[ 'wgExtensionCredits' ][ 'other' ][ ] = array(
@@ -66,19 +66,27 @@ call_user_func( function () {
 	$GLOBALS[ 'wgMessagesDirs' ][ 'Bootstrap' ] = __DIR__ . '/i18n';
 	$GLOBALS[ 'wgExtensionMessagesFiles' ][ 'Bootstrap' ] = __DIR__ . '/Bootstrap.i18n.php';
 
-	// register classes
-	$GLOBALS[ 'wgAutoloadClasses' ][ 'Bootstrap\ResourceLoaderBootstrapModule' ] = __DIR__ . '/src/ResourceLoaderBootstrapModule.php';
-	$GLOBALS[ 'wgAutoloadClasses' ][ 'Bootstrap\BootstrapManager' ]      = __DIR__ . '/src/BootstrapManager.php';
-	$GLOBALS[ 'wgAutoloadClasses' ][ 'Bootstrap\Hooks\SetupAfterCache' ] = __DIR__ . '/src/Hooks/SetupAfterCache.php';
-	$GLOBALS[ 'wgAutoloadClasses' ][ 'Bootstrap\Definition\ModuleDefinition' ]   = __DIR__ . '/src/Definition/ModuleDefinition.php';
-	$GLOBALS[ 'wgAutoloadClasses' ][ 'Bootstrap\Definition\V3ModuleDefinition' ] = __DIR__ . '/src/Definition/V3ModuleDefinition.php';
-
 	$GLOBALS[ 'wgHooks' ][ 'SetupAfterCache' ][ ] = function() {
 
 		$configuration = array();
 		$configuration[ 'IP' ] = $GLOBALS[ 'IP' ];
-		$configuration[ 'localBasePath' ] = $GLOBALS[ 'IP' ] . '/vendor/twbs/bootstrap';
-		$configuration[ 'remoteBasePath' ] = $GLOBALS[ 'wgScriptPath' ] . '/vendor/twbs/bootstrap';
+
+		if ( is_readable( __DIR__ . '/vendor/autoload.php' ) ) {
+
+			include_once __DIR__ . '/vendor/autoload.php';
+
+			$configuration[ 'localBasePath' ] = __DIR__;
+			$configuration[ 'remoteBasePath' ] = $GLOBALS[ 'wgExtensionAssetsPath' ] . '/' . basename( __DIR__ ) ;
+
+		} else {
+
+			$configuration[ 'localBasePath' ] = $GLOBALS[ 'IP' ];
+			$configuration[ 'remoteBasePath' ] = $GLOBALS[ 'wgScriptPath' ];
+
+		}
+
+		$configuration[ 'localBasePath' ] .= '/vendor/twbs/bootstrap';
+		$configuration[ 'remoteBasePath' ] .= '/vendor/twbs/bootstrap';
 
 		$setupAfterCache = new \Bootstrap\Hooks\SetupAfterCache( $configuration );
 		$setupAfterCache->process();
