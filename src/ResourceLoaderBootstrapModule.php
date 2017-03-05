@@ -82,7 +82,7 @@ class ResourceLoaderBootstrapModule extends ResourceLoaderFileModule {
 
 		if ( $this->styleText === null ) {
 
-//			$this->retrieveStylesFromCache( $context );
+			$this->retrieveStylesFromCache( $context );
 
 			if ( $this->styleText === null ) {
 				$this->compileStyles( $context );
