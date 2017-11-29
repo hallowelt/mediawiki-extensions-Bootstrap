@@ -1,5 +1,5 @@
 {
-	"name"       : "mediawiki/bootstrap",
+	"name"       : "hallowelt/bootstrap",
 	"type"       : "mediawiki-extension",
 	"description": "Provides the Twitter Bootstrap3 web front-end framework to MediaWiki skins and extensions",
 	"keywords"   : [
@@ -15,6 +15,11 @@
 		{
 			"name" : "Stephan Gambke",
 			"email": "s7eph4n@gmail.com",
+			"role" : "Developer"
+		},		
+		{
+			"name" : "Leonid Verhovskij",
+			"email": "l.verhovskij@gmail.com",
 			"role" : "Developer"
 		}
 	],
