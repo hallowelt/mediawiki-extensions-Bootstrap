@@ -1,5 +1,5 @@
 {
-	"name"       : "hallowelt/bootstrap",
+	"name"       : "mediawiki/bootstrap",
 	"type"       : "mediawiki-extension",
 	"description": "Provides the Twitter Bootstrap3 web front-end framework to MediaWiki skins and extensions",
 	"keywords"   : [
