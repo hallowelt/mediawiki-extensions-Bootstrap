@@ -73,12 +73,21 @@ call_user_func( function () {
 	$GLOBALS[ 'wgAutoloadClasses' ][ 'Bootstrap\Definition\V3ModuleDefinition' ] = __DIR__ . '/src/Definition/V3ModuleDefinition.php';
 
 	$GLOBALS[ 'wgHooks' ][ 'SetupAfterCache' ][ ] = function() {
-
 		$configuration = array();
 		$configuration[ 'IP' ] = $GLOBALS[ 'IP' ];
 		$configuration[ 'remoteBasePath' ] = $GLOBALS[ 'wgExtensionAssetsPath' ] . '/Bootstrap/resources/bootstrap';
-		$configuration[ 'localBasePath' ] = $GLOBALS[ 'IP' ] . $GLOBALS[ 'wgExtensionAssetsPath' ] . '/Bootstrap/resources/bootstrap';
-
+		$path = $GLOBALS['IP'];
+		$scriptPath = $GLOBALS['wgScriptPath'];
+		$path = str_replace( '\\', '/', $path );
+		if( $scriptPath && $scriptPath != "" ) {
+			$countDirs = substr_count( $scriptPath, '/' );
+			$i = 0;
+			while( $i < $countDirs ) {
+				$path = dirname( $path );
+				$i++;
+			}
+		}
+		$configuration[ 'localBasePath' ] = $path . $GLOBALS[ 'wgExtensionAssetsPath' ] . '/Bootstrap/resources/bootstrap';
 		$setupAfterCache = new \Bootstrap\Hooks\SetupAfterCache( $configuration );
 		$setupAfterCache->process();
 	};
